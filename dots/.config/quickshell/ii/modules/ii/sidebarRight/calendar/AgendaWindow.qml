@@ -689,7 +689,7 @@ PanelWindow {
                             if ((event.modifiers & Qt.AltModifier || root.altPressed) && delta) {
                                 root.zoomWeek(delta, event.y);
                             } else {
-                                const scrollBy = event.pixelDelta.y || delta / 120 * 80;
+                                const scrollBy = event.pixelDelta.y || Math.sign(delta) * 160;
                                 weekScroll.contentY = Math.max(0, Math.min(weekScroll.contentY - scrollBy,
                                                                            weekScroll.contentHeight - weekScroll.height));
                             }
