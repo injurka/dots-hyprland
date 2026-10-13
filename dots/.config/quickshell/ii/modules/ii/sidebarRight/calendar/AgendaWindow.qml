@@ -29,6 +29,7 @@ PanelWindow {
     property string presetFilePath: ""
     readonly property var days: Schedule.week(selectedDate)
     readonly property var events: Agenda.day(selectedDate)
+    readonly property bool todaySelected: !weekMode && Schedule.key(selectedDate) === Schedule.key(Agenda.now)
     readonly property int weekEventCount: days.reduce((count, day) => count + Agenda.day(day).length, 0)
     readonly property real hourHeight: 64
     readonly property var uiLocale: Qt.locale(Translation.languageCode === "he_HE" ? "he_IL" : Translation.languageCode)
@@ -382,12 +383,16 @@ PanelWindow {
                     Action {
                         label: Translation.tr("Today")
                         Layout.preferredWidth: 76
-                        downAction: () => root.selectedDate = new Date()
+                        selected: root.todaySelected
+                        downAction: () => {
+                            root.selectedDate = new Date();
+                            root.weekMode = false;
+                        }
                     }
                     Action {
                         Layout.preferredWidth: 66
                         label: Translation.tr("Day")
-                        selected: !root.weekMode
+                        selected: !root.weekMode && !root.todaySelected
                         downAction: () => root.weekMode = false
                     }
                     Action {
