@@ -22,6 +22,7 @@ PanelWindow {
     property var repeatDays: [1, 2, 3, 4, 5]
     property bool repeating: false
     property bool wholeSeries: false
+    property bool altPressed: false
     property string formError: ""
     readonly property var activityColors: ["#c9aceb", "#aac66e", "#88cbbb", "#64bfd2", "#dfbd79", "#db948e", "#e7a0c3"]
     property string presetStatus: ""
@@ -99,7 +100,7 @@ PanelWindow {
         if (!delta)
             return;
         const previous = hourHeight;
-        const next = Math.max(32, Math.min(128, previous + delta / 120 * 8));
+        const next = Math.max(32, Math.min(128, previous + Math.sign(delta) * 8));
         if (next === previous)
             return;
         const hourAtPointer = (weekScroll.contentY + pointerY) / previous;
@@ -124,8 +125,10 @@ PanelWindow {
             GlobalFocusGrab.addDismissable(root);
             frame.forceActiveFocus();
             scrollWeek();
-        } else
+        } else {
+            altPressed = false;
             GlobalFocusGrab.removeDismissable(root);
+        }
     }
     IpcHandler {
         target: "agenda"
@@ -294,12 +297,21 @@ PanelWindow {
                 root.opened = false;
         }
         Keys.onPressed: event => {
+            if (event.key === Qt.Key_Alt) {
+                root.altPressed = true;
+                event.accepted = true;
+                return;
+            }
             if (root.page === "overview" && (event.key === Qt.Key_PageDown || event.key === Qt.Key_PageUp)) {
                 root.selectedDate = Schedule.addDays(root.selectedDate, (event.key === Qt.Key_PageDown ? 1 :
                                                                                                          -1) * (root.weekMode
                                                                                                                 ? 7 : 1));
                 event.accepted = true;
             }
+        }
+        Keys.onReleased: event => {
+            if (event.key === Qt.Key_Alt)
+                root.altPressed = false;
         }
         ColumnLayout {
             anchors.fill: parent
@@ -673,10 +685,15 @@ PanelWindow {
                         z: 1000
                         acceptedButtons: Qt.NoButton
                         onWheel: event => {
-                            if (event.modifiers & Qt.AltModifier)
-                                root.zoomWeek(event.angleDelta.y, event.y);
-                            else
-                                event.accepted = false;
+                            const delta = event.angleDelta.y || event.pixelDelta.y;
+                            if ((event.modifiers & Qt.AltModifier || root.altPressed) && delta) {
+                                root.zoomWeek(delta, event.y);
+                            } else {
+                                const scrollBy = event.pixelDelta.y || delta / 120 * 80;
+                                weekScroll.contentY = Math.max(0, Math.min(weekScroll.contentY - scrollBy,
+                                                                           weekScroll.contentHeight - weekScroll.height));
+                            }
+                            event.accepted = true;
                         }
                     }
                 }
