@@ -625,6 +625,7 @@ PanelWindow {
                                             id: eventBlock
                                             required property var modelData
                                             readonly property bool activeNow: root.isActive(modelData, dayColumn.modelData)
+                                            readonly property string timeRange: Schedule.time(modelData.start) + "–" + Schedule.time(modelData.end)
                                             x: modelData.lane * (dayColumn.width - 6) / modelData.lanes + 3
                                             y: modelData.start / 60 * root.hourHeight
                                             width: (dayColumn.width - 6) / modelData.lanes - 3
@@ -663,10 +664,17 @@ PanelWindow {
                                                 }
                                                 Label {
                                                     visible: eventBlock.height > 45
-                                                    text: Schedule.time(eventBlock.modelData.start)
+                                                    width: parent.width
+                                                    text: eventBlock.timeRange
                                                     font.pixelSize: 10 * 1.1
                                                     color: Appearance.colors.colSubtext
+                                                    elide: Text.ElideRight
                                                 }
+                                            }
+                                            StyledToolTip {
+                                                text: eventBlock.modelData.title + "\n" + eventBlock.timeRange
+                                                font.family: "Maple Mono"
+                                                delay: 500
                                             }
                                         }
                                     }
