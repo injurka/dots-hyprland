@@ -366,8 +366,8 @@ PanelWindow {
                                                                                root.weekMode ? -7 : -1)
                     }
                     Label {
-                        Layout.fillWidth: true
                         Layout.minimumWidth: 80
+                        Layout.maximumWidth: Math.max(80, root.width - 350)
                         text: root.weekMode ? root.days[0].toLocaleDateString(root.uiLocale, "d MMM") + " — "
                                               + root.days[6].toLocaleDateString(root.uiLocale, "d MMM") :
                                               root.selectedDate.toLocaleDateString(root.uiLocale, "ddd, d MMMM")
@@ -379,6 +379,9 @@ PanelWindow {
                         hint: Translation.tr("Next")
                         downAction: () => root.selectedDate = Schedule.addDays(root.selectedDate,
                                                                                root.weekMode ? 7 : 1)
+                    }
+                    Item {
+                        Layout.fillWidth: true
                     }
                     Action {
                         label: Translation.tr("Today")
