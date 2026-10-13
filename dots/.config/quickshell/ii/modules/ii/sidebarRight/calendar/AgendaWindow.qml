@@ -24,15 +24,17 @@ PanelWindow {
     property bool wholeSeries: false
     property string formError: ""
     property string presetStatus: ""
+    property bool presetSucceeded: false
     property string presetFilePath: ""
     readonly property var days: Schedule.week(selectedDate)
     readonly property var events: Agenda.day(selectedDate)
     readonly property int weekEventCount: days.reduce((count, day) => count + Agenda.day(day).length, 0)
     readonly property real hourHeight: 64
+    readonly property var uiLocale: Qt.locale(Translation.languageCode === "he_HE" ? "he_IL" : Translation.languageCode)
     visible: opened
     exclusiveZone: 0
     implicitWidth: Math.min(page === "overview" && weekMode ? 1040 : 560, (screen?.width || 1280) - 40)
-    implicitHeight: Math.min(760, (screen?.height || 1080) - 60)
+    implicitHeight: Math.min(820, (screen?.height || 1080) - 60)
     color: "transparent"
     WlrLayershell.namespace: "quickshell:agenda"
     WlrLayershell.keyboardFocus: visible ? WlrKeyboardFocus.OnDemand : WlrKeyboardFocus.None
@@ -67,7 +69,7 @@ PanelWindow {
     }
     function saveEditor() {
         if (repeating && !repeatDays.length) {
-            formError = "Выбери дни повторения";
+            formError = Translation.tr("Choose repeat days");
             return;
         }
         if (Agenda.store(selectedDate, titleField.text, startField.text, endField.text, repeating ? repeatDays :
@@ -75,7 +77,7 @@ PanelWindow {
                          wholeSeries))
             page = "overview";
         else
-            formError = "Укажи название и время ЧЧ:ММ. Начало и конец должны различаться.";
+            formError = Translation.tr("Enter a title and HH:MM times. Start and end must differ.");
     }
     function scrollWeek() {
         Qt.callLater(() => {
@@ -128,14 +130,15 @@ PanelWindow {
     }
     FileDialog {
         id: presetDialog
-        title: "Выбрать JSON-пресет"
+        title: Translation.tr("Choose JSON preset")
         nameFilters: ["JSON (*.json)"]
         onVisibleChanged: if (!visible && root.opened)
                               GlobalFocusGrab.addDismissable(root)
         onAccepted: {
             const url = selectedFile.toString();
             if (!url.startsWith("file:///")) {
-                root.presetStatus = "Выбери локальный JSON-файл";
+                root.presetSucceeded = false;
+                root.presetStatus = Translation.tr("Select a local JSON file");
                 return;
             }
             const path = decodeURIComponent(url.slice(7));
@@ -149,12 +152,14 @@ PanelWindow {
         id: presetReader
         path: root.presetFilePath
         onLoaded: {
-            root.presetStatus = Agenda.importPreset(text());
-            if (!root.presetStatus)
-                root.presetStatus = "Пресет загружен";
+            const result = Agenda.importPreset(text());
+            root.presetSucceeded = result === "";
+            root.presetStatus = root.presetSucceeded ? Translation.tr("Preset loaded") : result;
         }
-        onLoadFailed: if (root.presetFilePath !== "")
-                          root.presetStatus = "Не удалось прочитать JSON-файл"
+        onLoadFailed: if (root.presetFilePath !== "") {
+                          root.presetSucceeded = false;
+                          root.presetStatus = Translation.tr("Could not read JSON file");
+                      }
     }
 
     component Label: StyledText {
@@ -285,21 +290,21 @@ PanelWindow {
                 IconButton {
                     visible: root.page !== "overview"
                     symbol: "arrow_back"
-                    hint: "К расписанию"
+                    hint: Translation.tr("Back to schedule")
                     downAction: () => root.page = "overview"
                 }
                 ColumnLayout {
                     Layout.fillWidth: true
                     spacing: 4
                     Label {
-                        text: "Календарь"
+                        text: Translation.tr("Calendar")
                         font.pixelSize: 16
                     }
                     Label {
-                        text: root.page === "editor" ? (root.editingEvent ? "Изменение активности" :
-                                                                            "Новая активность") : root.page
-                                                       === "settings" ? "Настройки" : root.weekMode
-                                                                        ? "План недели" : "Расписание дня"
+                        text: root.page === "editor" ? (root.editingEvent ? Translation.tr("Edit activity") :
+                                                                            Translation.tr("New activity")) : root.page
+                                                       === "settings" ? Translation.tr("Settings") : root.weekMode
+                                                                        ? Translation.tr("Week plan") : Translation.tr("Day schedule")
                         color: Appearance.colors.colSubtext
                         font.pixelSize: 13
                     }
@@ -310,18 +315,18 @@ PanelWindow {
                 IconButton {
                     visible: root.page === "overview"
                     symbol: "add"
-                    hint: "Добавить активность"
+                    hint: Translation.tr("Add activity")
                     downAction: () => root.openEditor(null)
                 }
                 IconButton {
                     visible: root.page === "overview"
                     symbol: "settings"
-                    hint: "Настройки календаря"
+                    hint: Translation.tr("Calendar settings")
                     downAction: () => root.page = "settings"
                 }
                 IconButton {
                     symbol: "close"
-                    hint: "Закрыть"
+                    hint: Translation.tr("Close")
                     downAction: () => root.opened = false
                 }
             }
@@ -347,26 +352,26 @@ PanelWindow {
                     Layout.fillWidth: true
                     IconButton {
                         symbol: "chevron_left"
-                        hint: "Назад"
+                        hint: Translation.tr("Previous")
                         downAction: () => root.selectedDate = Schedule.addDays(root.selectedDate,
                                                                                root.weekMode ? -7 : -1)
                     }
                     Label {
                         Layout.fillWidth: true
-                        text: root.weekMode ? root.days[0].toLocaleDateString(Qt.locale(), "d MMM") + " — "
-                                              + root.days[6].toLocaleDateString(Qt.locale(), "d MMM") :
-                                              root.selectedDate.toLocaleDateString(Qt.locale(), "ddd, d MMMM")
+                        text: root.weekMode ? root.days[0].toLocaleDateString(root.uiLocale, "d MMM") + " — "
+                                              + root.days[6].toLocaleDateString(root.uiLocale, "d MMM") :
+                                              root.selectedDate.toLocaleDateString(root.uiLocale, "ddd, d MMMM")
                         font.pixelSize: 20
                         elide: Text.ElideRight
                     }
                     IconButton {
                         symbol: "chevron_right"
-                        hint: "Вперёд"
+                        hint: Translation.tr("Next")
                         downAction: () => root.selectedDate = Schedule.addDays(root.selectedDate,
                                                                                root.weekMode ? 7 : 1)
                     }
                     Action {
-                        label: "Сегодня"
+                        label: Translation.tr("Today")
                         implicitHeight: 34
                         downAction: () => root.selectedDate = new Date()
                     }
@@ -376,14 +381,14 @@ PanelWindow {
                     spacing: 6
                     Action {
                         Layout.fillWidth: true
-                        label: "День"
+                        label: Translation.tr("Day")
                         symbol: "view_agenda"
                         selected: !root.weekMode
                         downAction: () => root.weekMode = false
                     }
                     Action {
                         Layout.fillWidth: true
-                        label: "Неделя"
+                        label: Translation.tr("Week")
                         symbol: "calendar_view_week"
                         selected: root.weekMode
                         downAction: () => root.weekMode = true
@@ -443,11 +448,11 @@ PanelWindow {
                                             elide: Text.ElideRight
                                         }
                                         Label {
-                                            text: dailyCard.modelData.conflict ? "Пересечение в расписании" :
+                                            text: dailyCard.modelData.conflict ? Translation.tr("Schedule conflict") :
                                                                                  dailyCard.modelData.source
                                                                                  === "routine"
-                                                                                 ? "Повторяющаяся активность" :
-                                                                                   "Личное событие"
+                                                                                 ? Translation.tr("Recurring activity") :
+                                                                                   Translation.tr("Personal event")
                                             font.pixelSize: 12
                                             color: Appearance.colors.colSubtext
                                         }
@@ -478,19 +483,19 @@ PanelWindow {
                         }
                         Label {
                             Layout.alignment: Qt.AlignHCenter
-                            text: root.weekMode ? "Неделя свободна" : "День свободен"
+                            text: root.weekMode ? Translation.tr("Free week") : Translation.tr("Free day")
                             font.pixelSize: 22
                         }
                         Label {
                             Layout.fillWidth: true
-                            text: "Добавь встречу, занятие\nили время для себя"
+                            text: Translation.tr("Add a meeting, activity\nor time for yourself")
                             horizontalAlignment: Text.AlignHCenter
                             color: Appearance.colors.colSubtext
                             wrapMode: Text.Wrap
                         }
                         Action {
                             Layout.alignment: Qt.AlignHCenter
-                            label: "Добавить активность"
+                            label: Translation.tr("Add activity")
                             primary: true
                             downAction: () => root.openEditor(null)
                         }
@@ -516,7 +521,7 @@ PanelWindow {
                                 spacing: 4
                                 Label {
                                     width: parent.width
-                                    text: dayHeader.modelData.toLocaleDateString(Qt.locale(), "ddd")
+                                    text: dayHeader.modelData.toLocaleDateString(root.uiLocale, "ddd")
                                     horizontalAlignment: Text.AlignHCenter
                                     color: Appearance.colors.colSubtext
                                     font.pixelSize: 12
@@ -652,21 +657,21 @@ PanelWindow {
                     width: parent.width
                     spacing: 14
                     Label {
-                        text: root.editingEvent ? "Измени активность" : "Запланируй время"
+                        text: root.editingEvent ? Translation.tr("Edit activity") : Translation.tr("Plan your time")
                         font.pixelSize: 22
                     }
                     Label {
-                        text: root.selectedDate.toLocaleDateString(Qt.locale(), "dddd, d MMMM")
+                        text: root.selectedDate.toLocaleDateString(root.uiLocale, "dddd, d MMMM")
                         color: Appearance.colors.colSubtext
                     }
                     Section {
                         Label {
-                            text: "Активность"
+                            text: Translation.tr("Activity")
                         }
                         Field {
                             id: titleField
                             Layout.fillWidth: true
-                            placeholderText: "Например, английский"
+                            placeholderText: Translation.tr("For example, English")
                         }
                         RowLayout {
                             Layout.fillWidth: true
@@ -674,7 +679,7 @@ PanelWindow {
                             ColumnLayout {
                                 Layout.fillWidth: true
                                 Label {
-                                    text: "Начало"
+                                    text: Translation.tr("Start time")
                                     color: Appearance.colors.colSubtext
                                 }
                                 Field {
@@ -688,7 +693,7 @@ PanelWindow {
                             ColumnLayout {
                                 Layout.fillWidth: true
                                 Label {
-                                    text: "Конец"
+                                    text: Translation.tr("End")
                                     color: Appearance.colors.colSubtext
                                 }
                                 Field {
@@ -704,14 +709,14 @@ PanelWindow {
                     Section {
                         visible: !root.editingEvent || root.editingEvent.source === "routine"
                         Label {
-                            text: root.editingEvent ? "Изменить" : "Повторение"
+                            text: root.editingEvent ? Translation.tr("Edit") : Translation.tr("Repeat")
                         }
                         RowLayout {
                             Layout.fillWidth: true
                             spacing: 8
                             Action {
                                 Layout.fillWidth: true
-                                label: root.editingEvent ? "Этот день" : "Один раз"
+                                label: root.editingEvent ? Translation.tr("This day") : Translation.tr("Once")
                                 selected: root.editingEvent ? !root.wholeSeries : !root.repeating
                                 downAction: () => {
                                     if (root.editingEvent)
@@ -722,7 +727,7 @@ PanelWindow {
                             }
                             Action {
                                 Layout.fillWidth: true
-                                label: root.editingEvent ? "Всю серию" : "По дням недели"
+                                label: root.editingEvent ? Translation.tr("Entire series") : Translation.tr("By weekday")
                                 selected: root.editingEvent ? root.wholeSeries : root.repeating
                                 downAction: () => {
                                     if (root.editingEvent)
@@ -739,31 +744,24 @@ PanelWindow {
                             Repeater {
                                 model: [
                                     {
-                                        label: "Пн",
                                         day: 1
                                     },
                                     {
-                                        label: "Вт",
                                         day: 2
                                     },
                                     {
-                                        label: "Ср",
                                         day: 3
                                     },
                                     {
-                                        label: "Чт",
                                         day: 4
                                     },
                                     {
-                                        label: "Пт",
                                         day: 5
                                     },
                                     {
-                                        label: "Сб",
                                         day: 6
                                     },
                                     {
-                                        label: "Вс",
                                         day: 0
                                     }
                                 ]
@@ -771,7 +769,7 @@ PanelWindow {
                                     required property var modelData
                                     Layout.fillWidth: true
                                     implicitWidth: 40
-                                    label: modelData.label
+                                    label: root.uiLocale.dayName(modelData.day || 7, Locale.ShortFormat)
                                     selected: root.repeatDays.includes(modelData.day)
                                     downAction: () => {
                                         root.repeatDays = selected ? root.repeatDays.filter(d => d
@@ -784,11 +782,11 @@ PanelWindow {
                         }
                         Label {
                             Layout.fillWidth: true
-                            text: root.editingEvent ? root.wholeSeries ? "Изменения применятся ко всей серии" :
-                                                                         "Остальные повторения останутся прежними" :
+                            text: root.editingEvent ? root.wholeSeries ? Translation.tr("Changes will apply to the entire series") :
+                                                                         Translation.tr("Other occurrences will stay unchanged") :
                                                                          root.repeating
-                                                                         ? "Каждую неделю, начиная с выбранной даты" :
-                                                                           "Только в выбранную дату"
+                                                                         ? Translation.tr("Every week starting on the selected date") :
+                                                                           Translation.tr("Only on the selected date")
                             color: Appearance.colors.colSubtext
                             font.pixelSize: 12
                             wrapMode: Text.Wrap
@@ -806,12 +804,12 @@ PanelWindow {
                         Layout.fillWidth: true
                         Action {
                             Layout.fillWidth: true
-                            label: root.wholeSeries ? "Удалить серию" : "Удалить активность"
+                            label: root.wholeSeries ? Translation.tr("Delete series") : Translation.tr("Delete activity")
                             symbol: "delete"
                             enabled: Agenda.ready
                             downAction: () => {
-                                Agenda.remove(root.editingEvent, root.wholeSeries);
-                                root.page = "overview";
+                                if (Agenda.remove(root.editingEvent, root.wholeSeries))
+                                    root.page = "overview";
                             }
                         }
                     }
@@ -820,7 +818,7 @@ PanelWindow {
             Action {
                 visible: root.page === "editor"
                 Layout.fillWidth: true
-                label: root.editingEvent ? "Сохранить изменения" : "Добавить активность"
+                label: root.editingEvent ? Translation.tr("Save changes") : Translation.tr("Add activity")
                 primary: true
                 enabled: Agenda.ready
                 downAction: () => root.saveEditor()
@@ -835,16 +833,16 @@ PanelWindow {
                 width: parent.width
                 spacing: 14
                 Label {
-                    text: "Настрой календарь"
+                    text: Translation.tr("Set up calendar")
                     font.pixelSize: 22
                 }
                 Section {
                     Label {
-                        text: "Повторяющиеся активности"
+                        text: Translation.tr("Recurring activities")
                     }
                     Action {
                         Layout.fillWidth: true
-                        label: Agenda.data.presetEnabled ? "Показываются" : "Скрыты"
+                        label: Agenda.data.presetEnabled ? Translation.tr("Shown") : Translation.tr("Hidden")
                         symbol: Agenda.data.presetEnabled ? "check_circle" : "visibility_off"
                         selected: Agenda.data.presetEnabled
                         enabled: Agenda.ready
@@ -852,7 +850,7 @@ PanelWindow {
                     }
                     Label {
                         Layout.fillWidth: true
-                        text: "Встречи и разовые события видны всегда"
+                        text: Translation.tr("Meetings and one-time events are always shown")
                         color: Appearance.colors.colSubtext
                         font.pixelSize: 12
                         wrapMode: Text.Wrap
@@ -860,43 +858,44 @@ PanelWindow {
                 }
                 Section {
                     Label {
-                        text: "Пример обычной недели"
+                        text: Translation.tr("Example week")
                     }
                     Label {
                         Layout.fillWidth: true
-                        text: "Зарядка, работа и личные занятия. Можно добавить как основу и изменить под себя."
+                        text: Translation.tr("Exercise, work, and personal activities. Add them as a starting point and customize them.")
                         color: Appearance.colors.colSubtext
                         wrapMode: Text.Wrap
                     }
                     Action {
                         Layout.fillWidth: true
-                        label: "Добавить пример"
+                        label: Translation.tr("Add example")
                         symbol: "calendar_add_on"
                         enabled: Agenda.ready
                         downAction: () => {
-                            Agenda.loadExample();
-                            root.page = "overview";
+                            if (Agenda.loadExample())
+                                root.page = "overview";
                         }
                     }
                 }
                 Section {
                     Label {
-                        text: "Пресет из JSON"
+                        text: Translation.tr("JSON preset")
                     }
                     Label {
                         Layout.fillWidth: true
-                        text: "Добавит занятия из файла. Повторная загрузка того же пресета обновит его занятия."
+                        text: Translation.tr("Add activities from a file. Loading the same preset again updates its activities.")
                         color: Appearance.colors.colSubtext
                         font.pixelSize: 12
                         wrapMode: Text.Wrap
                     }
                     Action {
                         Layout.fillWidth: true
-                        label: "Загрузить пресет"
+                        label: Translation.tr("Load preset")
                         symbol: "upload_file"
                         enabled: Agenda.ready
                         downAction: () => {
                             root.presetStatus = "";
+                            root.presetSucceeded = false;
                             GlobalFocusGrab.removeDismissable(root);
                             presetDialog.open();
                         }
@@ -905,15 +904,14 @@ PanelWindow {
                         visible: root.presetStatus !== ""
                         Layout.fillWidth: true
                         text: root.presetStatus
-                        color: root.presetStatus === "Пресет загружен" ? Appearance.colors.colPrimary :
-                                                                           Appearance.m3colors.m3error
+                        color: root.presetSucceeded ? Appearance.colors.colPrimary : Appearance.m3colors.m3error
                         font.pixelSize: 12
                         wrapMode: Text.Wrap
                     }
                 }
                 Action {
                     Layout.fillWidth: true
-                    label: "Восстановить выбранный день"
+                    label: Translation.tr("Restore selected day")
                     symbol: "restore"
                     enabled: Agenda.ready
                     downAction: () => Agenda.restore(root.selectedDate)
@@ -921,7 +919,7 @@ PanelWindow {
                 Label {
                     visible: root.confirmingClear
                     Layout.fillWidth: true
-                    text: "Удалить все события и повторяющиеся активности?"
+                    text: Translation.tr("Delete all events and recurring activities?")
                     wrapMode: Text.Wrap
                 }
                 RowLayout {
@@ -929,12 +927,12 @@ PanelWindow {
                     Action {
                         visible: root.confirmingClear
                         Layout.fillWidth: true
-                        label: "Отмена"
+                        label: Translation.tr("Cancel")
                         downAction: () => root.confirmingClear = false
                     }
                     Action {
                         Layout.fillWidth: true
-                        label: root.confirmingClear ? "Очистить" : "Очистить весь календарь"
+                        label: root.confirmingClear ? Translation.tr("Clear") : Translation.tr("Clear entire calendar")
                         symbol: "delete_sweep"
                         colBackground: Qt.alpha(Appearance.m3colors.m3error, 0.12)
                         colBackgroundHover: Qt.alpha(Appearance.m3colors.m3error, 0.2)

@@ -11,6 +11,7 @@ assert.equal(minutes('24:00'), -1);
 assert.equal(minutes('12:60'), -1);
 const data = initial();
 assert(valid(data));
+assert.equal(context.preset(text => `[${text}]`)[0].title, '[Exercise]');
 assert.equal(occurrences(data, date('2026-10-12')).length, 0);
 data.routines = context.preset();
 data.routines[0].startsOn = "2026-10-12";
