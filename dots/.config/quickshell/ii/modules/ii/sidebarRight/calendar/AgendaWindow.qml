@@ -35,7 +35,7 @@ PanelWindow {
     visible: opened
     exclusiveZone: 0
     implicitWidth: Math.min(page === "overview" && weekMode ? 1040 : 560, (screen?.width || 1280) - 40)
-    implicitHeight: Math.min(820, (screen?.height || 1080) - 60)
+    implicitHeight: Math.min(880, (screen?.height || 1080) - 40)
     color: "transparent"
     WlrLayershell.namespace: "quickshell:agenda"
     WlrLayershell.keyboardFocus: visible ? WlrKeyboardFocus.OnDemand : WlrKeyboardFocus.None
@@ -357,6 +357,7 @@ PanelWindow {
                 spacing: 14
                 RowLayout {
                     Layout.fillWidth: true
+                    spacing: 6
                     IconButton {
                         symbol: "chevron_left"
                         hint: Translation.tr("Previous")
@@ -365,10 +366,11 @@ PanelWindow {
                     }
                     Label {
                         Layout.fillWidth: true
+                        Layout.minimumWidth: 80
                         text: root.weekMode ? root.days[0].toLocaleDateString(root.uiLocale, "d MMM") + " — "
                                               + root.days[6].toLocaleDateString(root.uiLocale, "d MMM") :
                                               root.selectedDate.toLocaleDateString(root.uiLocale, "ddd, d MMMM")
-                        font.pixelSize: 20
+                        font.pixelSize: 18
                         elide: Text.ElideRight
                     }
                     IconButton {
@@ -379,24 +381,18 @@ PanelWindow {
                     }
                     Action {
                         label: Translation.tr("Today")
-                        implicitHeight: 34
+                        Layout.preferredWidth: 76
                         downAction: () => root.selectedDate = new Date()
                     }
-                }
-                RowLayout {
-                    Layout.fillWidth: true
-                    spacing: 6
                     Action {
-                        Layout.fillWidth: true
+                        Layout.preferredWidth: 66
                         label: Translation.tr("Day")
-                        symbol: "view_agenda"
                         selected: !root.weekMode
                         downAction: () => root.weekMode = false
                     }
                     Action {
-                        Layout.fillWidth: true
+                        Layout.preferredWidth: 66
                         label: Translation.tr("Week")
-                        symbol: "calendar_view_week"
                         selected: root.weekMode
                         downAction: () => root.weekMode = true
                     }
