@@ -444,6 +444,7 @@
   "Choose JSON preset": "JSON プリセットを選択",
   "Choose repeat days": "繰り返す曜日を選択",
   "Clear entire calendar": "カレンダーをすべて消去",
+  "Color": "色",
   "Color must be #RRGGBB": "色は #RRGGBB 形式で指定してください",
   "Could not load preset: %1": "プリセットを読み込めませんでした: %1",
   "Could not open schedule file": "スケジュールファイルを開けませんでした",

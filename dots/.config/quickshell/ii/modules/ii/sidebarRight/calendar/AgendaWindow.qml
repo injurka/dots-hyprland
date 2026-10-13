@@ -23,6 +23,7 @@ PanelWindow {
     property bool repeating: false
     property bool wholeSeries: false
     property string formError: ""
+    readonly property var activityColors: ["#c9aceb", "#aac66e", "#88cbbb", "#64bfd2", "#dfbd79", "#db948e", "#e7a0c3"]
     property string presetStatus: ""
     property bool presetSucceeded: false
     property string presetFilePath: ""
@@ -50,6 +51,7 @@ PanelWindow {
         repeating = event ? event.source === "routine" : false;
         repeatDays = event?.days || [selectedDate.getDay()];
         titleField.text = event?.title || "";
+        colorField.text = event?.color || "#c9aceb";
         startField.text = Schedule.time(event ? event.originalStart : (start === undefined ? 1080 : start));
         endField.text = Schedule.time(event ? event.originalEnd : (start === undefined ? 1140 : start + 60));
         formError = "";
@@ -62,6 +64,7 @@ PanelWindow {
         if (!event)
             return;
         titleField.text = event.title;
+        colorField.text = event.color || "#c9aceb";
         startField.text = Schedule.time(series ? event.start : event.originalStart);
         endField.text = Schedule.time(series ? event.end : event.originalEnd);
         repeatDays = event.days;
@@ -72,9 +75,13 @@ PanelWindow {
             formError = Translation.tr("Choose repeat days");
             return;
         }
+        if (!/^#[0-9a-fA-F]{6}$/.test(colorField.text)) {
+            formError = Translation.tr("Color must be #RRGGBB");
+            return;
+        }
         if (Agenda.store(selectedDate, titleField.text, startField.text, endField.text, repeating ? repeatDays :
                                                                                                     [], editingEvent,
-                         wholeSeries))
+                         wholeSeries, colorField.text))
             page = "overview";
         else
             formError = Translation.tr("Enter a title and HH:MM times. Start and end must differ.");
@@ -703,6 +710,39 @@ PanelWindow {
                                     placeholderText: "19:00"
                                     maximumLength: 5
                                 }
+                            }
+                        }
+                        Label {
+                            text: Translation.tr("Color")
+                            color: Appearance.colors.colSubtext
+                        }
+                        RowLayout {
+                            Layout.fillWidth: true
+                            spacing: 6
+                            Repeater {
+                                model: root.activityColors
+                                delegate: RippleButton {
+                                    required property string modelData
+                                    Layout.preferredWidth: 30
+                                    Layout.preferredHeight: 30
+                                    buttonRadius: 15
+                                    colBackground: modelData
+                                    colBackgroundHover: modelData
+                                    downAction: () => colorField.text = modelData
+                                    Accessible.name: Translation.tr("Color") + " " + modelData
+                                    contentItem: MaterialSymbol {
+                                        text: "check"
+                                        visible: colorField.text.toLowerCase() === modelData
+                                        color: "#242424"
+                                    }
+                                }
+                            }
+                            Field {
+                                id: colorField
+                                Layout.fillWidth: true
+                                Layout.minimumWidth: 95
+                                maximumLength: 7
+                                placeholderText: "#RRGGBB"
                             }
                         }
                     }

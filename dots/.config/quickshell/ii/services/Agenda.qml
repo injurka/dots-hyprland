@@ -102,19 +102,21 @@ Singleton {
         save(next);
     }
 
-    function store(value, title, from, to, days, editing, wholeSeries) {
+    function store(value, title, from, to, days, editing, wholeSeries, color) {
         const start = Schedule.minutes(from), finish = Schedule.minutes(to);
-        if (!title.trim() || start < 0 || finish < 0 || start === finish)
+        if (!title.trim() || start < 0 || finish < 0 || start === finish || !/^#[0-9a-fA-F]{6}$/.test(color))
             return false;
 
         const end = finish > start ? finish : finish + 1440;
+        color = color.toLowerCase();
         const next = JSON.parse(JSON.stringify(data));
         if (editing) {
             if (editing.source === "routine" && !wholeSeries) {
                 next.exceptions[editing.occurrenceId] = {
                     "title": title.trim(),
                     "start": start,
-                    "end": end
+                    "end": end,
+                    "color": color
                 };
             } else {
                 const collection = editing.source === "routine" ? next.routines : next.events;
@@ -127,7 +129,8 @@ Singleton {
                 Object.assign(collection[index], {
                                   "title": title.trim(),
                                   "start": start,
-                                  "end": end
+                                  "end": end,
+                                  "color": color
                               });
                 if (editing.source === "routine") {
                     if (!days.length)
@@ -142,7 +145,7 @@ Singleton {
                 "title": title.trim(),
                 "start": start,
                 "end": end,
-                "color": "#c9aceb"
+                "color": color
             };
             if (days.length) {
                 next.routines.push(Object.assign(entry, {

@@ -762,6 +762,7 @@
   "Choose repeat days": "Elige los días de repetición",
   "Clear": "Limpiar",
   "Clear entire calendar": "Limpiar todo el calendario",
+  "Color": "Color",
   "Color must be #RRGGBB": "El color debe tener el formato #RRGGBB",
   "Could not load preset: %1": "No se pudo cargar el ajuste: %1",
   "Could not open schedule file": "No se pudo abrir el archivo del horario",

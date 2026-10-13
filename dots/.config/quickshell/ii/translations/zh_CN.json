@@ -737,6 +737,7 @@
   "Choose repeat days": "选择重复日期",
   "Clear": "清除",
   "Clear entire calendar": "清空整个日历",
+  "Color": "颜色",
   "Color must be #RRGGBB": "颜色格式必须为 #RRGGBB",
   "Could not load preset: %1": "无法加载预设：%1",
   "Could not open schedule file": "无法打开日程文件",

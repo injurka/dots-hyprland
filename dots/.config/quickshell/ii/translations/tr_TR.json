@@ -620,6 +620,7 @@
   "Choose JSON preset": "JSON ön ayarı seç",
   "Choose repeat days": "Tekrar günlerini seç",
   "Clear entire calendar": "Takvimin tamamını temizle",
+  "Color": "Renk",
   "Color must be #RRGGBB": "Renk #RRGGBB biçiminde olmalı",
   "Could not load preset: %1": "Ön ayar yüklenemedi: %1",
   "Could not open schedule file": "Program dosyası açılamadı",

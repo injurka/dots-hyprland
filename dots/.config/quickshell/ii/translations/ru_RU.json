@@ -773,6 +773,7 @@
   "Choose repeat days": "Выбери дни повторения",
   "Clear": "Очистить",
   "Clear entire calendar": "Очистить весь календарь",
+  "Color": "Цвет",
   "Color must be #RRGGBB": "Цвет должен быть в формате #RRGGBB",
   "Could not load preset: %1": "Не удалось загрузить пресет: %1",
   "Could not open schedule file": "Не удалось открыть файл расписания",

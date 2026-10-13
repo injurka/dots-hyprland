@@ -42,14 +42,15 @@ function initial() {
     return {version: 1, presetEnabled: false, routines: [], events: [], exceptions: {}};
 }
 function valid(data) {
+    const colorValid = color => color === undefined || (typeof color === "string" && /^#[0-9a-fA-F]{6}$/.test(color));
     const itemValid = item => item && typeof item.id === "string" && typeof item.title === "string"
         && Number.isInteger(item.start) && Number.isInteger(item.end) && item.start >= 0
-        && item.start < 1440 && item.end > item.start && item.end <= item.start + 1440;
+        && item.start < 1440 && item.end > item.start && item.end <= item.start + 1440 && colorValid(item.color);
     return data && data.version === 1 && typeof data.presetEnabled === "boolean"
         && Array.isArray(data.routines) && data.routines.every(r => itemValid(r) && (!r.startsOn || (/^\d{4}-\d{2}-\d{2}$/.test(r.startsOn) && key(date(r.startsOn)) === r.startsOn)) && Array.isArray(r.days) && r.days.every(d => Number.isInteger(d) && d >= 0 && d <= 6))
         && Array.isArray(data.events) && data.events.every(e => itemValid(e) && /^\d{4}-\d{2}-\d{2}$/.test(e.date) && key(date(e.date)) === e.date)
         && data.exceptions && typeof data.exceptions === "object" && !Array.isArray(data.exceptions)
-        && Object.values(data.exceptions).every(e => e && (e.skipped === true || (Number.isInteger(e.start) && Number.isInteger(e.end) && e.start >= 0 && e.start < 1440 && e.end > e.start && e.end <= e.start + 1440)));
+        && Object.values(data.exceptions).every(e => e && colorValid(e.color) && (e.skipped === true || (Number.isInteger(e.start) && Number.isInteger(e.end) && e.start >= 0 && e.start < 1440 && e.end > e.start && e.end <= e.start + 1440)));
 }
 function importPreset(data, preset) {
     if (!preset || preset.format !== "ii-agenda-preset" || preset.version !== 1

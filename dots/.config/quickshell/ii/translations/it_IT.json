@@ -375,6 +375,7 @@
   "Choose JSON preset": "Scegli modello JSON",
   "Choose repeat days": "Scegli i giorni di ripetizione",
   "Clear entire calendar": "Svuota l'intero calendario",
+  "Color": "Colore",
   "Color must be #RRGGBB": "Il colore deve avere il formato #RRGGBB",
   "Could not load preset: %1": "Impossibile caricare il modello: %1",
   "Could not open schedule file": "Impossibile aprire il file del programma",

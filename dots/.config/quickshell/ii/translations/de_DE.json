@@ -620,6 +620,7 @@
   "Choose JSON preset": "JSON-Vorlage auswählen",
   "Choose repeat days": "Wiederholungstage auswählen",
   "Clear entire calendar": "Gesamten Kalender leeren",
+  "Color": "Farbe",
   "Color must be #RRGGBB": "Farbe muss das Format #RRGGBB haben",
   "Could not load preset: %1": "Vorlage konnte nicht geladen werden: %1",
   "Could not open schedule file": "Zeitplandatei konnte nicht geöffnet werden",

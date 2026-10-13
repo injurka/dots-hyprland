@@ -354,6 +354,7 @@
   "Choose JSON preset": "Вибрати JSON-пресет",
   "Choose repeat days": "Вибери дні повторення",
   "Clear entire calendar": "Очистити весь календар",
+  "Color": "Колір",
   "Color must be #RRGGBB": "Колір має бути у форматі #RRGGBB",
   "Could not load preset: %1": "Не вдалося завантажити пресет: %1",
   "Could not open schedule file": "Не вдалося відкрити файл розкладу",

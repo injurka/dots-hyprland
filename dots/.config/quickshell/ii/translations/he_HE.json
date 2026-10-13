@@ -517,6 +517,7 @@
   "Choose JSON preset": "בחירת תבנית JSON",
   "Choose repeat days": "בחירת ימי חזרה",
   "Clear entire calendar": "ניקוי כל לוח השנה",
+  "Color": "צבע",
   "Color must be #RRGGBB": "הצבע חייב להיות בפורמט #RRGGBB",
   "Could not load preset: %1": "לא ניתן לטעון את התבנית: %1",
   "Could not open schedule file": "לא ניתן לפתוח את קובץ לוח הזמנים",
