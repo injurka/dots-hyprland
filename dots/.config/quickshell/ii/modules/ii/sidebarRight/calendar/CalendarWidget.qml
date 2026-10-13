@@ -1,43 +1,49 @@
-import qs.services
-import qs.modules.common
-import qs.modules.common.widgets
-import "calendar_layout.js" as CalendarLayout
 import QtQuick
 import QtQuick.Layouts
+import "calendar_layout.js" as CalendarLayout
+import qs.modules.common
+import qs.modules.common.widgets
+import qs.services
 
 Item {
-    // Layout.topMargin: 10
-    anchors.topMargin: 10
+    id: root
+
     property int monthShift: 0
     property var viewingDate: CalendarLayout.getDateInXMonthsTime(monthShift)
     property var calendarLayout: CalendarLayout.getCalendarLayout(viewingDate, monthShift === 0)
+
+    anchors.topMargin: 10
     width: calendarColumn.width
     implicitHeight: calendarColumn.height + 10 * 2
-
-    Keys.onPressed: (event) => {
-        if ((event.key === Qt.Key_PageDown || event.key === Qt.Key_PageUp)
-            && event.modifiers === Qt.NoModifier) {
-            if (event.key === Qt.Key_PageDown) {
+    Keys.onPressed: event => {
+        if ((event.key === Qt.Key_PageDown || event.key === Qt.Key_PageUp) && event.modifiers
+                === Qt.NoModifier) {
+            if (event.key === Qt.Key_PageDown)
                 monthShift++;
-            } else if (event.key === Qt.Key_PageUp) {
+            else if (event.key === Qt.Key_PageUp)
                 monthShift--;
-            }
             event.accepted = true;
         }
     }
+
+    AgendaWindow {
+        id: agendaWindow
+    }
+    // Layout.topMargin: 10
+
     MouseArea {
         anchors.fill: parent
-        onWheel: (event) => {
-            if (event.angleDelta.y > 0) {
+        onWheel: event => {
+            if (event.angleDelta.y > 0)
                 monthShift--;
-            } else if (event.angleDelta.y < 0) {
+            else if (event.angleDelta.y < 0)
                 monthShift++;
-            }
         }
     }
 
     ColumnLayout {
         id: calendarColumn
+
         anchors.centerIn: parent
         spacing: 5
 
@@ -45,23 +51,40 @@ Item {
         RowLayout {
             Layout.fillWidth: true
             spacing: 5
+
             CalendarHeaderButton {
                 clip: true
-                buttonText: `${monthShift != 0 ? "• " : ""}${viewingDate.toLocaleDateString(Qt.locale(), "MMMM yyyy")}`
+                buttonText: `${monthShift != 0 ? "• " : ""}${viewingDate.toLocaleDateString(Qt.locale(),
+                                                                                            "MMMM yyyy")}`
                 tooltipText: (monthShift === 0) ? "" : Translation.tr("Jump to current month")
                 downAction: () => {
                     monthShift = 0;
                 }
             }
+
             Item {
                 Layout.fillWidth: true
                 Layout.fillHeight: false
             }
             CalendarHeaderButton {
                 forceCircle: true
+                tooltipText: "Расписание"
+                Accessible.name: "Расписание"
+                downAction: () => agendaWindow.openDate(new Date())
+                contentItem: MaterialSymbol {
+                    text: "open_in_full"
+                    iconSize: Appearance.font.pixelSize.larger
+                    horizontalAlignment: Text.AlignHCenter
+                    color: Appearance.colors.colOnLayer1
+                }
+            }
+
+            CalendarHeaderButton {
+                forceCircle: true
                 downAction: () => {
                     monthShift--;
                 }
+
                 contentItem: MaterialSymbol {
                     text: "chevron_left"
                     iconSize: Appearance.font.pixelSize.larger
@@ -69,11 +92,13 @@ Item {
                     color: Appearance.colors.colOnLayer1
                 }
             }
+
             CalendarHeaderButton {
                 forceCircle: true
                 downAction: () => {
                     monthShift++;
                 }
+
                 contentItem: MaterialSymbol {
                     text: "chevron_right"
                     iconSize: Appearance.font.pixelSize.larger
@@ -86,11 +111,14 @@ Item {
         // Week days row
         RowLayout {
             id: weekDaysRow
+
             Layout.alignment: Qt.AlignHCenter
             Layout.fillHeight: false
             spacing: 5
+
             Repeater {
                 model: CalendarLayout.weekDays
+
                 delegate: CalendarDayButton {
                     day: Translation.tr(modelData.day)
                     isToday: modelData.today
@@ -103,17 +131,24 @@ Item {
         // Real week rows
         Repeater {
             id: calendarRows
+
             // model: calendarLayout
             model: 6
+
             delegate: RowLayout {
                 Layout.alignment: Qt.AlignHCenter
                 Layout.fillHeight: false
                 spacing: 5
+
                 Repeater {
                     model: Array(7).fill(modelData)
+
                     delegate: CalendarDayButton {
                         day: calendarLayout[modelData][index].day
                         isToday: calendarLayout[modelData][index].today
+                        downAction: () => {
+                            return agendaWindow.openDate(calendarLayout[modelData][index].date);
+                        }
                     }
                 }
             }

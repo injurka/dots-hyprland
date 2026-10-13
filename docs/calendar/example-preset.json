@@ -1,0 +1,24 @@
+{
+  "format": "ii-agenda-preset",
+  "version": 1,
+  "id": "my-week",
+  "routines": [
+    {
+      "id": "work",
+      "title": "Работа",
+      "days": [1, 2, 3, 4, 5],
+      "start": "10:30",
+      "end": "14:00",
+      "color": "#64bfd2"
+    },
+    {
+      "id": "english",
+      "title": "Английский",
+      "days": [1, 5],
+      "start": "20:30",
+      "end": "21:30",
+      "color": "#dfbd79",
+      "startsOn": "2026-10-12"
+    }
+  ]
+}

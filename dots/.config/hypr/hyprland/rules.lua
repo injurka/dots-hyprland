@@ -80,6 +80,7 @@ hl.window_rule({match = {title = ".*is sharing (a window|your screen).*" }, move
 hl.window_rule({match = {title = ".*\\.exe" }, immediate = true})
 hl.window_rule({match = {title = ".*minecraft.*" }, immediate = true})
 hl.window_rule({match = {class = "^(steam_app).*" }, immediate = true})
+hl.window_rule({match = {class = "^([Ss]team|steamwebhelper)$" }, opacity = "0.95 override 0.90 override"})
 
 -- No shadow for tiled windows
 hl.window_rule({match = {float = 0 }, no_shadow = true})
@@ -136,6 +137,14 @@ hl.layer_rule({ match = { namespace = "osk[0-9]*" }, ignore_alpha = 0.6})
 hl.layer_rule({ match = { namespace = "quickshell:.*" }, blur_popups = true})
 hl.layer_rule({ match = { namespace = "quickshell:.*" }, blur = true})
 hl.layer_rule({ match = { namespace = "quickshell:.*" }, ignore_alpha = 0.79})
+
+-- Avoid blur color artifacts while these panels fade out.
+hl.layer_rule({ match = { namespace = "quickshell:sidebarRight" }, ignore_alpha = 1})
+hl.layer_rule({ match = { namespace = "quickshell:sidebarLeft" }, ignore_alpha = 1})
+hl.layer_rule({ match = { namespace = "quickshell:cheatsheet" }, ignore_alpha = 1})
+hl.layer_rule({ match = { namespace = "quickshell:srs" }, ignore_alpha = 1})
+hl.layer_rule({ match = { namespace = "quickshell:agenda" }, ignore_alpha = 1})
+
 hl.layer_rule({ match = { namespace = "quickshell:background" }, blur = false})
 hl.layer_rule({ match = { namespace = "quickshell:bar" }, animation = "slide"})
 hl.layer_rule({ match = { namespace = "quickshell:actionCenter" }, no_anim = true})
