@@ -31,7 +31,7 @@ PanelWindow {
     readonly property var events: Agenda.day(selectedDate)
     readonly property bool todaySelected: !weekMode && Schedule.key(selectedDate) === Schedule.key(Agenda.now)
     readonly property int weekEventCount: days.reduce((count, day) => count + Agenda.day(day).length, 0)
-    readonly property real hourHeight: 64
+    property real hourHeight: 64
     readonly property var uiLocale: Qt.locale(Translation.languageCode === "he_HE" ? "he_IL" : Translation.languageCode)
     visible: opened
     exclusiveZone: 0
@@ -94,6 +94,18 @@ PanelWindow {
             const target = currentWeek ? nowY - weekScroll.height * 0.3 : 8 * root.hourHeight;
             weekScroll.contentY = Math.max(0, Math.min(target, weekScroll.contentHeight - weekScroll.height));
         });
+    }
+    function zoomWeek(delta, pointerY) {
+        if (!delta)
+            return;
+        const previous = hourHeight;
+        const next = Math.max(32, Math.min(128, previous + delta / 120 * 8));
+        if (next === previous)
+            return;
+        const hourAtPointer = (weekScroll.contentY + pointerY) / previous;
+        hourHeight = next;
+        weekScroll.contentY = Math.max(0, Math.min(hourAtPointer * next - pointerY,
+                                                   weekScroll.contentHeight - weekScroll.height));
     }
     function isActive(event, day) {
         if (Schedule.key(day) !== Schedule.key(Agenda.now))
@@ -561,6 +573,11 @@ PanelWindow {
                     contentHeight: 24 * root.hourHeight
                     boundsBehavior: Flickable.StopAtBounds
                     ScrollBar.vertical: ScrollBar {}
+                    WheelHandler {
+                        target: null
+                        acceptedModifiers: Qt.AltModifier
+                        onWheel: event => root.zoomWeek(event.angleDelta.y, event.y)
+                    }
                     Repeater {
                         model: 24
                         Item {
