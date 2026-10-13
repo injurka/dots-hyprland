@@ -573,115 +573,118 @@ PanelWindow {
                         }
                     }
                 }
-                Flickable {
-                    id: weekScroll
+                Item {
+                    id: weekViewport
                     visible: root.weekMode && root.weekEventCount > 0
-                    onHeightChanged: if (visible)
-                                         root.scrollWeek()
                     Layout.fillWidth: true
                     Layout.fillHeight: true
-                    clip: true
-                    contentWidth: width
-                    contentHeight: 24 * root.hourHeight
-                    boundsBehavior: Flickable.StopAtBounds
-                    ScrollBar.vertical: ScrollBar {}
-                    Repeater {
-                        model: 24
-                        Item {
-                            required property int index
-                            y: index * root.hourHeight
-                            width: weekScroll.width
-                            Label {
-                                width: 45
-                                text: Schedule.time(parent.index * 60)
-                                font.pixelSize: 11 * 1.1
-                                color: Appearance.colors.colSubtext
-                            }
-                            Rectangle {
-                                x: 50
-                                width: parent.width - 50
-                                height: 1
-                                color: Qt.alpha(Appearance.colors.colOutlineVariant, 0.4)
+                    Flickable {
+                        id: weekScroll
+                        onHeightChanged: if (weekViewport.visible)
+                                             root.scrollWeek()
+                        anchors.fill: parent
+                        clip: true
+                        contentWidth: width
+                        contentHeight: 24 * root.hourHeight
+                        boundsBehavior: Flickable.StopAtBounds
+                        ScrollBar.vertical: ScrollBar {}
+                        Repeater {
+                            model: 24
+                            Item {
+                                required property int index
+                                y: index * root.hourHeight
+                                width: weekScroll.width
+                                Label {
+                                    width: 45
+                                    text: Schedule.time(parent.index * 60)
+                                    font.pixelSize: 11 * 1.1
+                                    color: Appearance.colors.colSubtext
+                                }
+                                Rectangle {
+                                    x: 50
+                                    width: parent.width - 50
+                                    height: 1
+                                    color: Qt.alpha(Appearance.colors.colOutlineVariant, 0.4)
+                                }
                             }
                         }
-                    }
-                    Row {
-                        x: 50
-                        width: weekScroll.width - 50
-                        height: weekScroll.contentHeight
-                        Repeater {
-                            model: root.days
-                            Item {
-                                id: dayColumn
-                                required property var modelData
-                                width: (weekScroll.width - 50) / 7
-                                height: weekScroll.contentHeight
-                                Repeater {
-                                    model: Agenda.day(dayColumn.modelData)
-                                    RippleButton {
-                                        id: eventBlock
-                                        required property var modelData
-                                        readonly property bool activeNow: root.isActive(modelData, dayColumn.modelData)
-                                        x: modelData.lane * (dayColumn.width - 6) / modelData.lanes + 3
-                                        y: modelData.start / 60 * root.hourHeight
-                                        width: (dayColumn.width - 6) / modelData.lanes - 3
-                                        height: Math.max(10, (modelData.end - modelData.start) / 60 * root.hourHeight
-                                                         - 3)
-                                        buttonRadius: 9
-                                        leftPadding: 10
-                                        rightPadding: 8
-                                        topPadding: 6
-                                        bottomPadding: 6
-                                        clip: true
-                                        colBackground: activeNow ? Appearance.colors.colSecondaryContainer :
-                                                                   Qt.alpha(modelData.color || Appearance.colors.colPrimary,
-                                                                            modelData.source === "routine" ? 0.12 : 0.24)
-                                        colBackgroundHover: Qt.alpha(modelData.color
-                                                                     || Appearance.colors.colPrimary, 0.3)
-                                        downAction: () => {
-                                            root.selectedDate = dayColumn.modelData;
-                                            root.openEditor(modelData);
-                                        }
-                                        Rectangle {
-                                            width: eventBlock.activeNow ? 5 : 3
-                                            height: parent.height
-                                            radius: 2
-                                            color: eventBlock.modelData.conflict
-                                                   ? Appearance.m3colors.m3error : eventBlock.modelData.color
-                                                     || Appearance.colors.colPrimary
-                                        }
-                                        contentItem: Column {
-                                            spacing: 3
-                                            Label {
-                                                width: parent.width
-                                                text: (eventBlock.activeNow ? "● " : "") + eventBlock.modelData.title
-                                                font.pixelSize: 12 * 1.1
-                                                elide: Text.ElideRight
+                        Row {
+                            x: 50
+                            width: weekScroll.width - 50
+                            height: weekScroll.contentHeight
+                            Repeater {
+                                model: root.days
+                                Item {
+                                    id: dayColumn
+                                    required property var modelData
+                                    width: (weekScroll.width - 50) / 7
+                                    height: weekScroll.contentHeight
+                                    Repeater {
+                                        model: Agenda.day(dayColumn.modelData)
+                                        RippleButton {
+                                            id: eventBlock
+                                            required property var modelData
+                                            readonly property bool activeNow: root.isActive(modelData, dayColumn.modelData)
+                                            x: modelData.lane * (dayColumn.width - 6) / modelData.lanes + 3
+                                            y: modelData.start / 60 * root.hourHeight
+                                            width: (dayColumn.width - 6) / modelData.lanes - 3
+                                            height: Math.max(10, (modelData.end - modelData.start) / 60 * root.hourHeight
+                                                             - 3)
+                                            buttonRadius: 9
+                                            leftPadding: 10
+                                            rightPadding: 8
+                                            topPadding: 6
+                                            bottomPadding: 6
+                                            clip: true
+                                            colBackground: activeNow ? Appearance.colors.colSecondaryContainer :
+                                                                       Qt.alpha(modelData.color || Appearance.colors.colPrimary,
+                                                                                modelData.source === "routine" ? 0.12 : 0.24)
+                                            colBackgroundHover: Qt.alpha(modelData.color
+                                                                         || Appearance.colors.colPrimary, 0.3)
+                                            downAction: () => {
+                                                root.selectedDate = dayColumn.modelData;
+                                                root.openEditor(modelData);
                                             }
-                                            Label {
-                                                visible: eventBlock.height > 45
-                                                text: Schedule.time(eventBlock.modelData.start)
-                                                font.pixelSize: 10 * 1.1
-                                                color: Appearance.colors.colSubtext
+                                            Rectangle {
+                                                width: eventBlock.activeNow ? 5 : 3
+                                                height: parent.height
+                                                radius: 2
+                                                color: eventBlock.modelData.conflict
+                                                       ? Appearance.m3colors.m3error : eventBlock.modelData.color
+                                                         || Appearance.colors.colPrimary
+                                            }
+                                            contentItem: Column {
+                                                spacing: 3
+                                                Label {
+                                                    width: parent.width
+                                                    text: (eventBlock.activeNow ? "● " : "") + eventBlock.modelData.title
+                                                    font.pixelSize: 12 * 1.1
+                                                    elide: Text.ElideRight
+                                                }
+                                                Label {
+                                                    visible: eventBlock.height > 45
+                                                    text: Schedule.time(eventBlock.modelData.start)
+                                                    font.pixelSize: 10 * 1.1
+                                                    color: Appearance.colors.colSubtext
+                                                }
                                             }
                                         }
                                     }
                                 }
                             }
                         }
-                    }
-                    Rectangle {
-                        visible: root.days.some(day => Schedule.key(day) === Schedule.key(Agenda.now))
-                        x: 50
-                        y: (Agenda.now.getHours() + Agenda.now.getMinutes() / 60) * root.hourHeight
-                        width: weekScroll.width - 50
-                        height: 2
-                        z: 2
-                        color: Appearance.colors.colPrimary
+                        Rectangle {
+                            visible: root.days.some(day => Schedule.key(day) === Schedule.key(Agenda.now))
+                            x: 50
+                            y: (Agenda.now.getHours() + Agenda.now.getMinutes() / 60) * root.hourHeight
+                            width: weekScroll.width - 50
+                            height: 2
+                            z: 2
+                            color: Appearance.colors.colPrimary
+                        }
                     }
                     MouseArea {
-                        parent: weekScroll
-                        anchors.fill: weekScroll
+                        anchors.fill: parent
                         z: 1000
                         acceptedButtons: Qt.NoButton
                         onWheel: event => {
