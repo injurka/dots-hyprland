@@ -573,11 +573,6 @@ PanelWindow {
                     contentHeight: 24 * root.hourHeight
                     boundsBehavior: Flickable.StopAtBounds
                     ScrollBar.vertical: ScrollBar {}
-                    WheelHandler {
-                        target: null
-                        acceptedModifiers: Qt.AltModifier
-                        onWheel: event => root.zoomWeek(event.angleDelta.y, event.y)
-                    }
                     Repeater {
                         model: 24
                         Item {
@@ -671,6 +666,18 @@ PanelWindow {
                         height: 2
                         z: 2
                         color: Appearance.colors.colPrimary
+                    }
+                    MouseArea {
+                        parent: weekScroll
+                        anchors.fill: weekScroll
+                        z: 1000
+                        acceptedButtons: Qt.NoButton
+                        onWheel: event => {
+                            if (event.modifiers & Qt.AltModifier)
+                                root.zoomWeek(event.angleDelta.y, event.y);
+                            else
+                                event.accepted = false;
+                        }
                     }
                 }
             }
